@@ -17,7 +17,7 @@ public class MainApp extends StateBasedGame
 	public static int GAME_WIDTH = 1200;
 	public static int GAME_HEIGH = 800;
 	public static String GAME_NAME = "Rioter Slayer";
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	public static String VERSION = "v0.0.2";
 
 	public MainApp()
@@ -40,9 +40,9 @@ public class MainApp extends StateBasedGame
 	public void initStatesList(GameContainer arg0) throws SlickException
 	{
 		addState(new MainMenuState());
+		addState(new MainGameState());
 		addState(new MeilleurScoreState());
 		addState(new OptionState());
-		addState(new MainGameState());
 		addState(new GameOverState());
 
 	}

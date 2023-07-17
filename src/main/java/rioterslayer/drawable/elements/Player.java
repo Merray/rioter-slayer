@@ -18,16 +18,24 @@ public class Player
 
 	private int playerMaxHealth, playerCurrentHealth;
 
+	private int speed;
+
+	public int bonusTime;
+
+	private boolean buffed;
+
 	private Image playerImage;
 
 	private Image playerPortraitFine;
 	private Image playerPortraitNotFine;
 	private Image playerPortraitHurt;
+	private Image playerPortraitHealed;
 	private Animation playerHealthAnimation;
 
 	private Weapon playerWeapon;
 
 	private boolean isHurt = false;
+	private boolean isHealed = false;
 
 	private TrueTypeFont font = FontUtils.getFont("fonts/arcadePix.TTF", 24f);
 
@@ -39,10 +47,13 @@ public class Player
 		this.playerY = playerY;
 		this.playerMaxHealth = 3;
 		this.playerCurrentHealth = this.playerMaxHealth;
-		this.playerImage = new Image("sprites/player.png").getScaledCopy(.3f);
+		this.speed = 1;
+		this.bonusTime = 0;
+		this.playerImage = new Image("sprites/player2.png").getScaledCopy(.3f);
 		this.playerPortraitFine = new Image("sprites/playerPortraitFine.png");
 		this.playerPortraitNotFine = new Image("sprites/playerPortraitNotFine.png");
 		this.playerPortraitHurt = new Image("sprites/playerPortraitHurt.png");
+		this.playerPortraitHealed = new Image("sprites/playerPortraitHealed.png");
 
 		this.playerHealthAnimation = new Animation(new SpriteSheet("sprites/coeur_spritesheet.png", 216, 216), 150);
 
@@ -54,9 +65,14 @@ public class Player
 		if (this.isHurt)
 		{
 			playerPortraitHurt.draw(10, 15);
+		} else if (this.isHealed)
+		{
+			playerPortraitHealed.draw(10, 15);
+
 		} else if (this.playerCurrentHealth < this.playerMaxHealth)
 		{
 			playerPortraitNotFine.draw(10, 15);
+
 		} else
 		{
 			playerPortraitFine.draw(10, 15);
@@ -189,6 +205,56 @@ public class Player
 	public void setPlayerWeapon(Weapon playerWeapon)
 	{
 		this.playerWeapon = playerWeapon;
+	}
+
+	public boolean isHealed()
+	{
+		return isHealed;
+	}
+
+	public void setHealed(boolean isHealed)
+	{
+		this.isHealed = isHealed;
+	}
+
+	public int getSpeed()
+	{
+		return speed;
+	}
+
+	public void setSpeed(int speed)
+	{
+		this.speed = speed;
+	}
+
+	public Image getPlayerPortraitHealed()
+	{
+		return playerPortraitHealed;
+	}
+
+	public void setPlayerPortraitHealed(Image playerPortraitHealed)
+	{
+		this.playerPortraitHealed = playerPortraitHealed;
+	}
+
+	public int getBonusTime()
+	{
+		return bonusTime;
+	}
+
+	public void setBonusTime(int bonusTime)
+	{
+		this.bonusTime = bonusTime;
+	}
+
+	public boolean isBuffed()
+	{
+		return buffed;
+	}
+
+	public void setBuffed(boolean buffed)
+	{
+		this.buffed = buffed;
 	}
 
 }

@@ -20,6 +20,8 @@ import org.newdawn.slick.state.transition.FadeOutTransition;
 import rioterslayer.drawable.elements.Bullet;
 import rioterslayer.drawable.elements.Enemy;
 import rioterslayer.drawable.elements.Player;
+import rioterslayer.drawable.powerups.PowerUp;
+import rioterslayer.drawable.powerups.PowerUps;
 import rioterslayer.mainapp.MainApp;
 import rioterslayer.utils.FontUtils;
 
@@ -29,6 +31,7 @@ public class MainGameState extends BasicGameState
 	public static final int ID = 1;
 	private StateBasedGame game;
 	private GameContainer container;
+	private boolean enemiesSpawn = true;
 	Random random;
 
 	// Font
@@ -37,6 +40,7 @@ public class MainGameState extends BasicGameState
 	// Sons / Musiques
 	private Music gameMusic;
 	private Sound fireSound;
+	private Sound speedDownSound;
 	private Sound playerHurtSound;
 	private Sound enemyDeathSound1;
 	private Sound enemyDeathSound2;
@@ -55,10 +59,12 @@ public class MainGameState extends BasicGameState
 	ArrayList<Enemy> enemies;
 	private int nbEnemies;
 
-	// PowerUps powerUps;
+	PowerUps powerUps;
+	private int nbPowerUps;
 
 	int timePassed = 0;
 	int hurtTime = 0;
+	int healedTime = 0;
 	int reloadTime = 0;
 	boolean reloading = false;
 	boolean collision = false;
@@ -75,7 +81,7 @@ public class MainGameState extends BasicGameState
 		player = new Player(650, 700);
 		bullets = new ArrayList<>();
 		enemies = new ArrayList<>();
-		// powerUps = new PowerUps();
+		powerUps = new PowerUps();
 		deathSounds = new ArrayList<>();
 		random = new Random();
 		fireSound = new Sound("sounds/pew_pew.ogg");
@@ -83,6 +89,7 @@ public class MainGameState extends BasicGameState
 		enemyDeathSound2 = new Sound("sounds/death_sound2.ogg");
 		enemyDeathSound3 = new Sound("sounds/death_sound3.ogg");
 		playerHurtSound = new Sound("sounds/playerHurtSound.ogg");
+		speedDownSound = new Sound("sounds/speed_down.ogg");
 		deathSounds.add(enemyDeathSound1);
 		deathSounds.add(enemyDeathSound2);
 		deathSounds.add(enemyDeathSound3);
@@ -93,16 +100,17 @@ public class MainGameState extends BasicGameState
 	public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException
 	{
 		timePassed += delta;
-		// powerUps.powerUpDelay += delta;
+		powerUps.powerUpDelay += delta;
 
 		updatePlayerStats(delta);
 		updateDeplacementJoueur(container);
 		updateDeplacementBullets(delta);
 		updateDeplacementEnemies(delta);
-		// updateDeplacementPowerUps(delta);
+		updateDeplacementPowerUps(delta);
 		updateCollision();
 		updateListeEnemies();
 		updateListeBullets();
+		updateListePowerUps();
 
 	}
 
@@ -114,7 +122,7 @@ public class MainGameState extends BasicGameState
 		dessinerJoueur(g);
 		dessinerBullets();
 		dessinerEnemies();
-		// dessinerPowerUps();
+		dessinerPowerUps();
 
 	}
 
@@ -125,8 +133,11 @@ public class MainGameState extends BasicGameState
 
 		bullets.clear();
 		enemies.clear();
+		powerUps.getDisplayedPowerUps().clear();
 		nbBullets = 0;
 		nbEnemies = 0;
+		nbPowerUps = 0;
+		powerUps.powerUpDelay = 0;
 		player = new Player(650, 700);
 
 	}
@@ -154,7 +165,7 @@ public class MainGameState extends BasicGameState
 				{
 
 					fireSound.play();
-					bullets.add(new Bullet(player.getPlayerX() + 32, 700));
+					bullets.add(new Bullet(player.getPlayerX() + 20, 680));
 					player.getPlayerWeapon().setCurrentAmmo(player.getPlayerWeapon().getCurrentAmmo() - 1);
 					nbBullets++;
 				}
@@ -170,31 +181,51 @@ public class MainGameState extends BasicGameState
 		}
 	}
 
-	// private void dessinerPowerUps()
-	// {
-	// for (PowerUp p : powerUps.getDisplayedPowerUps())
-	// {
-	// p.draw();
-	// }
-	// }
+	private void dessinerPowerUps()
+	{
+		for (PowerUp p : powerUps.getDisplayedPowerUps())
+		{
+			p.draw();
+		}
+	}
 
-	// private void updateDeplacementPowerUps(int delta)
-	// {
-	// if (powerUps.powerUpDelay > 10000)
-	// {
-	// powerUps.powerUpDelay = 0;
-	// powerUps.ajouterPowerUp();
-	// }
+	private void updateDeplacementPowerUps(int delta) throws SlickException
+	{
+		if (powerUps.powerUpDelay > 10000)
+		{
+			powerUps.powerUpDelay = 0;
+			powerUps.ajouterPowerUp();
+			nbPowerUps++;
+		}
 
-	// for (PowerUp p : powerUps.getDisplayedPowerUps())
-	// {
-	// p.setY(p.getY() + delta / 5);
-	// }
-	// }
+		for (PowerUp p : powerUps.getDisplayedPowerUps())
+		{
+			p.setY(p.getY() + delta / 5);
+		}
+	}
 
 	private void updatePlayerStats(int delta)
 	{
 
+		// Buff
+		if (player.isBuffed())
+		{
+			player.bonusTime -= delta;
+
+			if (player.bonusTime < 0)
+			{
+				player.bonusTime = 0;
+				player.setBuffed(false);
+
+				if (player.getSpeed() != 1)
+				{
+					player.setSpeed(1);
+					speedDownSound.play();
+				}
+			}
+		}
+
+		// Reload
 		if (player.getPlayerWeapon().getCurrentAmmo() == 0)
 		{
 			reloadTime += delta;
@@ -213,6 +244,7 @@ public class MainGameState extends BasicGameState
 			}
 		}
 
+		// Hurt
 		if (player.isHurt())
 		{
 			hurtTime += delta;
@@ -224,6 +256,19 @@ public class MainGameState extends BasicGameState
 			}
 		}
 
+		// Heal
+		if (player.isHealed())
+		{
+			healedTime += delta;
+
+			if (healedTime > 1000)
+			{
+				healedTime = 0;
+				player.setHealed(false);
+			}
+		}
+
+		// Game over
 		if (player.getPlayerCurrentHealth() <= 0)
 		{
 			this.game.enterState(GameOverState.ID, new FadeOutTransition(), new FadeInTransition());
@@ -260,10 +305,11 @@ public class MainGameState extends BasicGameState
 		if (MainApp.DEBUG)
 		{
 			g.setColor(Color.red);
-			g.drawString("DEBUG MODE", 20, 680);
+			g.drawString("DEBUG MODE", 20, 660);
 			g.setColor(Color.black);
-			g.drawString("Bullets : " + nbBullets, 20, 700);
-			g.drawString("Enemies : " + nbEnemies, 20, 720);
+			g.drawString("Bullets : " + nbBullets, 20, 680);
+			g.drawString("Enemies : " + nbEnemies, 20, 700);
+			g.drawString("Power ups : " + nbPowerUps, 20, 720);
 			g.drawString("Collision : " + collision, 20, 740);
 		}
 	}
@@ -274,10 +320,10 @@ public class MainGameState extends BasicGameState
 		Input input = container.getInput();
 		if (input.isKeyDown(Input.KEY_LEFT))
 		{
-			player.setPlayerX(player.getPlayerX() - 5);
+			player.setPlayerX(player.getPlayerX() - 5 * player.getSpeed());
 		} else if (input.isKeyDown(Input.KEY_RIGHT))
 		{
-			player.setPlayerX(player.getPlayerX() + 5);
+			player.setPlayerX(player.getPlayerX() + 5 * player.getSpeed());
 		}
 
 		// Pour pas sortir de l'écran
@@ -292,7 +338,7 @@ public class MainGameState extends BasicGameState
 
 	private void updateDeplacementEnemies(int delta) throws SlickException
 	{
-		if (timePassed > 1200)
+		if (enemiesSpawn && timePassed > 1200)
 		{
 			timePassed = 0;
 
@@ -333,6 +379,14 @@ public class MainGameState extends BasicGameState
 
 			}
 		}
+
+		for (PowerUp p : powerUps.getDisplayedPowerUps())
+		{
+			if (p.collision(player))
+			{
+				p.setColisioned(true);
+			}
+		}
 	}
 
 	private void updateListeBullets()
@@ -367,6 +421,28 @@ public class MainGameState extends BasicGameState
 				enemies.remove(i);
 				nbEnemies--;
 				collision = false;
+			}
+
+		}
+	}
+
+	private void updateListePowerUps()
+	{
+		for (int i = powerUps.getDisplayedPowerUps().size() - 1; i >= 0; i--)
+		{
+
+			if (powerUps.getDisplayedPowerUps().get(i).getY() > 750
+					|| powerUps.getDisplayedPowerUps().get(i).isColisioned())
+			{
+
+				if (powerUps.getDisplayedPowerUps().get(i).isColisioned())
+				{
+					powerUps.getDisplayedPowerUps().get(i).setColisioned(false);
+					powerUps.getDisplayedPowerUps().get(i).getPowerUpSound().play(1f, .3f);
+					powerUps.getDisplayedPowerUps().get(i).appliquerEffet(player);
+				}
+				powerUps.getDisplayedPowerUps().remove(i);
+				nbPowerUps--;
 			}
 
 		}

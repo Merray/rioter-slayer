@@ -1,14 +1,21 @@
 package rioterslayer.drawable.powerups;
 
-import org.newdawn.slick.Image;
+import org.newdawn.slick.Animation;
+import org.newdawn.slick.Sound;
+
+import rioterslayer.drawable.elements.Player;
 
 public abstract class PowerUp
 {
 	protected int x, y;
 
-	protected Image powerUpImage;
+	protected Animation powerUpAnimation;
+
+	protected Sound powerUpSound;
 
 	protected boolean isColisioned;
+
+	protected int bonusTime;
 
 	public PowerUp(int x, int y)
 	{
@@ -18,9 +25,26 @@ public abstract class PowerUp
 		this.isColisioned = false;
 	}
 
+	public void appliquerEffet(Player player)
+	{
+
+	}
+
+	public boolean collision(Player player)
+	{
+		if ((x >= player.getPlayerX() - 50 && x <= player.getPlayerX() + 50)
+				&& (y >= player.getPlayerY() && y <= player.getPlayerY() + 80))
+		{
+			return true;
+		} else
+		{
+			return false;
+		}
+	}
+
 	public void draw()
 	{
-		powerUpImage.draw(x, y);
+		powerUpAnimation.draw(x, y);
 	}
 
 	public int getX()
@@ -43,16 +67,6 @@ public abstract class PowerUp
 		this.y = y;
 	}
 
-	public Image getPowerUpImage()
-	{
-		return powerUpImage;
-	}
-
-	public void setPowerUpImage(Image powerUpImage)
-	{
-		this.powerUpImage = powerUpImage;
-	}
-
 	public boolean isColisioned()
 	{
 		return isColisioned;
@@ -61,6 +75,36 @@ public abstract class PowerUp
 	public void setColisioned(boolean isColisioned)
 	{
 		this.isColisioned = isColisioned;
+	}
+
+	public Sound getPowerUpSound()
+	{
+		return powerUpSound;
+	}
+
+	public void setPowerUpSound(Sound powerUpSound)
+	{
+		this.powerUpSound = powerUpSound;
+	}
+
+	public Animation getPowerUpAnimation()
+	{
+		return powerUpAnimation;
+	}
+
+	public void setPowerUpAnimation(Animation powerUpAnimation)
+	{
+		this.powerUpAnimation = powerUpAnimation;
+	}
+
+	public int getBonusTime()
+	{
+		return bonusTime;
+	}
+
+	public void setBonusTime(int bonusTime)
+	{
+		this.bonusTime = bonusTime;
 	}
 
 }

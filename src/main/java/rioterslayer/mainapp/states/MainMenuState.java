@@ -41,7 +41,7 @@ public class MainMenuState extends BasicGameState
 
 	// Musiques
 	public static Music mainMenuBackgroundMusic;
-	public static float volume = 1f;
+	public static float volume = 0f;
 	private boolean musicPlaying;
 	private Sound selectionSound;
 	private Sound validationSound;
@@ -54,7 +54,7 @@ public class MainMenuState extends BasicGameState
 		this.container = container;
 		this.game = game;
 		// Images
-		this.hayAnimation = new Animation(new SpriteSheet("backgrounds/hay_sprite.png", 50, 50), 50);
+		this.hayAnimation = new Animation(new SpriteSheet("backgrounds/rolling_hay-sheet.png", 50, 50), 50);
 		this.backgroundImageBack = new Image("backgrounds/city_dark_back.png");
 		this.backgroundImageFront = new Image("backgrounds/city_dark_front.png");
 		this.gameLogo = new Image("logos/Rioter_Slayer.png");
